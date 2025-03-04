@@ -28,7 +28,7 @@ This project is currently not deployed to a server or url, therefore in order to
 
 Desktop:
 
-Clone this repository to your local machine
-Navigate to the cloned repository's directory in the terminal
-Type the following commands (make sure you have Node Package Manager installed): npm install express --save node .\app.js
-Open your preferred browser and type http://localhost:8080/
+1. Clone this repository to your local machine
+2. Navigate to the cloned repository's directory in the terminal
+3. Type the following commands (make sure you have Node Package Manager installed): npm install express --save node .\app.js
+4. Open your preferred browser and type http://localhost:8080/
