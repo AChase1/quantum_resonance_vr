@@ -45,3 +45,7 @@ Desktop:
 
 - https://en.wikipedia.org/wiki/List_of_mathematical_shapes
 - https://threejs.org/docs/index.html?q=geometry#api/en/geometries/
+
+Interactions:
+
+- https://threejs.org/docs/#api/en/core/Raycaster

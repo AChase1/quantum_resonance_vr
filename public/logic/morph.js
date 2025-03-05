@@ -80,7 +80,6 @@ class Morph {
     }
 
     defineMorph(geometry, color, size, position, internalRotationAngle, emissiveIntensity) {
-        console.log(position);
         this.geometry = geometry === undefined ? defaultGeometry : geometry;
         this.color = color === undefined ? defaultColor : color;
         this.size = size === undefined ? defaultSize : size;

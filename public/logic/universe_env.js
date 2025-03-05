@@ -11,5 +11,7 @@ AFRAME.registerComponent('universe-env', {
             morph.setAttribute('morph', "objectPosRange: " + this.data.range);
             this.el.appendChild(morph);
         }
+
+
     }
 });
