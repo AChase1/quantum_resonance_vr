@@ -11,16 +11,16 @@
     <script src="logic/morph.js"></script>
     <script src="logic/universe_env.js"></script>
     <script src="logic/string.js"></script>
-    <script src="logic/interaction.js"></script>
+    <script src="logic/controller.js"></script>
+    <script src="logic/halo-interface.js"></script>
     <link rel="stylesheet" href="css/user-gesture.css" />
   </head>
   <body>
-    <a-scene start-experience physics="debug: true" interaction>
+    <a-scene start-experience physics="debug: true" controller>
       <!--ASSETS-->
       <a-assets> </a-assets>
 
       <a-entity id="universe" universe-env></a-entity>
-      <a-entity id="string" string></a-entity>
 
       <!-- CAMERA & CURSOR -->
       <a-entity
@@ -30,6 +30,7 @@
         wasd-controls
         look-controls
       >
+        <a-entity id="halo-interface" halo-interface></a-entity>
         <a-entity
           id="cursor"
           cursor="rayOrigin:mouse;"
@@ -37,9 +38,6 @@
         >
         </a-entity>
       </a-entity>
-
-      <!-- ENVIRONMENT -->
-      <a-entity id="environment" environment> </a-entity>
 
       <!-- USER GESTURE HTML-->
       <div id="user-gesture-overlay">

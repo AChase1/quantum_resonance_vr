@@ -23,10 +23,7 @@ class Geometry {
 
     static capsule = (radius, length) => new THREE.CapsuleGeometry(radius, length);
 
-    static createMesh(geometry, color, emissiveIntensity) {
-        const material = new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: emissiveIntensity });
-        return new THREE.Mesh(geometry, material);
-    }
+    static createMesh = (geometry, color, emissiveIntensity) => new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: emissiveIntensity }));
 
     static createGeometry = (index, size) => {
         switch (index) {
@@ -63,7 +60,6 @@ class Geometry {
 
 const defaultColor = new THREE.Color(0x000000);
 const defaultSize = 1;
-const defaultPosition = { x: 0, y: 1.8, z: -2 };
 const defaultInternalRotationAngle = { x: 0, y: 0, z: 0 };
 const defaultEmissiveIntensity = 0;
 const defaultGeometry = Geometry.createGeometry(0, 1);
@@ -71,10 +67,11 @@ const defaultGeometry = Geometry.createGeometry(0, 1);
 class Morph {
 
     constructor() {
+        this.objectPosRange = 50;
         this.geometry = defaultGeometry;
         this.color = defaultColor;
         this.size = defaultSize;
-        this.position = defaultPosition;
+        this.position = { x: this.getCoordinate(this.objectPosRange), y: Math.random() * 10, z: this.getCoordinate(this.objectPosRange) };;
         this.internalRotationAngle = defaultInternalRotationAngle;
         this.emissiveIntensity = defaultEmissiveIntensity;
     }
@@ -83,16 +80,16 @@ class Morph {
         this.geometry = geometry === undefined ? defaultGeometry : geometry;
         this.color = color === undefined ? defaultColor : color;
         this.size = size === undefined ? defaultSize : size;
-        this.position = position === undefined ? defaultPosition : position;
+        this.position = position === undefined ? { x: this.getCoordinate(this.objectPosRange), y: Math.random() * 10, z: this.getCoordinate(this.objectPosRange) } : position;
         this.internalRotationAngle = internalRotationAngle === undefined ? defaultInternalRotationAngle : internalRotationAngle;
         this.emissiveIntensity = emissiveIntensity === undefined ? defaultEmissiveIntensity : emissiveIntensity;
     }
 
-    randomize(objectPosRange) {
+    randomize() {
         const geometry = Geometry.createGeometry(Math.floor(Math.random() * 12), Math.random() * 2);
         const color = new THREE.Color(Math.random() * 0xffffff);
         const size = Math.random() * 2;
-        const position = { x: this.getCoordinate(objectPosRange), y: Math.random() * 10, z: this.getCoordinate(objectPosRange) };
+        const position = this.position;
         const internalRotationAngle = { x: Math.random() * 0.02, y: Math.random() * 0.02, z: Math.random() * 0.02 };
         const emissiveIntensity = Math.random();
 
@@ -104,16 +101,12 @@ class Morph {
 
 AFRAME.registerComponent("morph", {
 
-    schema: {
-        objectPosRange: { type: "int", default: 50 },
-    },
-
     init: function () {
         this.morph = new Morph();
         this.setMorph();
 
         this.interval = setInterval(() => {
-            this.morph.randomize(this.data.objectPosRange);
+            this.morph.randomize();
             this.setMorph();
         }, 1000);
     },
