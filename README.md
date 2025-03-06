@@ -8,7 +8,7 @@ Welcome to Quantum Resonance VR! Join with a couple of friends in leveraging the
 
 ---
 
-Players will enter an empty universe where objects randomly phase between different states and characteristics, representing the undefined and unrealized potential state of the universe before particle strings vibrate, according to String Theory. Using the floating particle strings around the player, they can vibrate the various strings in order to instantiate and define the objects around them. As a team, multiple players work together to build the universe around them, racing against time before the Plank Epoch ends (referring to the events occuring 0 t 10^-43 seconds after the Big Bang where all of the fundamental forces and matter in the universe were in one giant melting pot). Players must instantiate 100% of the objects in the universe in order to win the game.
+Players will enter an empty universe where objects randomly phase between different states and characteristics, representing the undefined and unrealized potential state of the universe before particle strings vibrate, according to String Theory. Using the floating particle strings around the player, they can vibrate the various strings in order to instantiate and define the objects around them. As a team, multiple players work together to build the universe around them, racing against time before the Plank Epoch ends (referring to the events occuring 0 t 10^-43 seconds after the Big Bang). Players must instantiate 100% of the objects in the universe in order to win the game.
 <br>
 <br>
 
@@ -45,3 +45,7 @@ Desktop:
 
 - https://en.wikipedia.org/wiki/List_of_mathematical_shapes
 - https://threejs.org/docs/index.html?q=geometry#api/en/geometries/
+
+Interactions:
+
+- https://threejs.org/docs/#api/en/core/Raycaster
