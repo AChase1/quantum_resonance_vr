@@ -62,41 +62,59 @@ const defaultColor = new THREE.Color(0x000000);
 const defaultSize = 1;
 const defaultInternalRotationAngle = { x: 0, y: 0, z: 0 };
 const defaultEmissiveIntensity = 0;
-const defaultGeometry = Geometry.createGeometry(0, 1);
+const defaultGeometryIndex = 0;
+const defaultPosition = new THREE.Vector3(0, 0, -9);
 
 class Morph {
 
     constructor() {
-        this.objectPosRange = 50;
-        this.geometry = defaultGeometry;
-        this.color = defaultColor;
-        this.size = defaultSize;
-        this.position = { x: this.getCoordinate(this.objectPosRange), y: Math.random() * 10, z: this.getCoordinate(this.objectPosRange) };;
-        this.internalRotationAngle = defaultInternalRotationAngle;
-        this.emissiveIntensity = defaultEmissiveIntensity;
+        this.defineGeometry(Math.random());
+        this.defineColor(Math.random());
+        this.defineSize(Math.random());
+        this.definePosition(Math.random());
+        this.defineInternalRotationAngle(Math.random());
+        this.defineEmissiveIntensity(Math.random());
     }
 
-    defineMorph(geometry, color, size, position, internalRotationAngle, emissiveIntensity) {
-        this.geometry = geometry === undefined ? defaultGeometry : geometry;
-        this.color = color === undefined ? defaultColor : color;
-        this.size = size === undefined ? defaultSize : size;
-        this.position = position === undefined ? { x: this.getCoordinate(this.objectPosRange), y: Math.random() * 10, z: this.getCoordinate(this.objectPosRange) } : position;
-        this.internalRotationAngle = internalRotationAngle === undefined ? defaultInternalRotationAngle : internalRotationAngle;
-        this.emissiveIntensity = emissiveIntensity === undefined ? defaultEmissiveIntensity : emissiveIntensity;
+    defineColor(factor) {
+        const hue = (factor % 1) * 360;
+        this.color = this.color == undefined ? defaultColor : new THREE.Color(`hsl(${hue}, 100%, 50%)`);
     }
 
-    randomize() {
-        const geometry = Geometry.createGeometry(Math.floor(Math.random() * 12), Math.random() * 2);
-        const color = new THREE.Color(Math.random() * 0xffffff);
-        const size = Math.random() * 2;
-        const position = this.position;
-        const internalRotationAngle = { x: Math.random() * 0.02, y: Math.random() * 0.02, z: Math.random() * 0.02 };
-        const emissiveIntensity = Math.random();
-
-        this.defineMorph(geometry, color, size, position, internalRotationAngle, emissiveIntensity);
+    defineGeometry(factor) {
+        this.geometryIndex = this.geometryIndex == undefined ? defaultGeometryIndex : Math.floor((factor % 1) * 12) % 12;
     }
 
-    getCoordinate = (objectPosRange) => (Math.random() * objectPosRange * 2) - (objectPosRange);
+    defineSize(factor) {
+        const updatedFactor = factor == 0 ? 0.5 : factor;
+        this.size = this.size == undefined ? defaultSize : updatedFactor * 2;
+    }
+
+    definePosition(factor) {
+        const x = this.getCoordinate(GlobalTracker.haloRadius);
+        const y = factor * Math.random() * 10;
+        const z = this.getCoordinate(GlobalTracker.haloRadius) - 9;
+
+        this.position = this.position == undefined ? defaultPosition : new THREE.Vector3(
+            THREE.MathUtils.clamp(x, -5, 5),
+            THREE.MathUtils.clamp(y, 0, 5),
+            THREE.MathUtils.clamp(z, -5, 5)
+        );
+    }
+    getCoordinate = (factor) => (Math.random() * factor * 2) - (factor);
+
+    defineInternalRotationAngle(factor) {
+        this.internalRotationAngle = this.internalRotationAngle == undefined ? defaultInternalRotationAngle : {
+            x: (factor % 1) * 0.02,
+            y: (factor % 1) * 0.02,
+            z: (factor % 1) * 0.02
+        };
+    }
+
+    defineEmissiveIntensity(factor) {
+        this.emissiveIntensity = this.emissiveIntensity == undefined ? defaultEmissiveIntensity : (factor % 1);
+    }
+
 }
 
 AFRAME.registerComponent("morph", {
@@ -104,23 +122,53 @@ AFRAME.registerComponent("morph", {
     init: function () {
         this.morph = new Morph();
         this.setMorph();
-
-        this.interval = setInterval(() => {
-            this.morph.randomize();
-            this.setMorph();
-        }, 1000);
     },
 
     tick: function () {
-        this.el.object3D.rotation.x += this.morph.internalRotationAngle.x;
-        this.el.object3D.rotation.y += this.morph.internalRotationAngle.y;
-        this.el.object3D.rotation.z += this.morph.internalRotationAngle.z;
+        if (this.el.hasAttribute('mesh')) {
+            this.el.object3D.rotation.x += this.morph.internalRotationAngle.x;
+            this.el.object3D.rotation.y += this.morph.internalRotationAngle.y;
+            this.el.object3D.rotation.z += this.morph.internalRotationAngle.z;
+        }
     },
 
     setMorph: function () {
-        this.el.setObject3D("mesh", Geometry.createMesh(this.morph.geometry, this.morph.color, this.morph.emissiveIntensity));
+        this.el.setObject3D("mesh", Geometry.createMesh(Geometry.createGeometry(this.morph.geometryIndex), this.morph.color, this.morph.emissiveIntensity));
         this.el.setAttribute("scale", { x: this.morph.size, y: this.morph.size, z: this.morph.size });
-        this.el.setAttribute("position", { x: this.morph.position.x, y: this.morph.position.y, z: this.morph.position.z });
+        this.el.setAttribute("position", this.morph.position);
     },
+
+    instantiateMorph: function () {
+
+        this.setMorph();
+    },
+
+    updateMorphProperties: function (string, factor) {
+        switch (string.id) {
+            case "color":
+                this.morph.defineColor(factor);
+                break;
+            case "geometry":
+                this.morph.defineGeometry(factor);
+                break;
+            case "size":
+                this.morph.defineSize(factor);
+                break;
+            case "position":
+                this.morph.definePosition(factor * 5);
+                break;
+            case "internalRotationAngle":
+                this.morph.defineInternalRotationAngle(factor);
+                break;
+            case "emissiveIntensity":
+                this.morph.defineEmissiveIntensity(factor);
+                break;
+            default:
+                console.log("Unknown string");
+        }
+
+        this.setMorph();
+    },
+
 
 });

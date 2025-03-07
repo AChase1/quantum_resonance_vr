@@ -1,6 +1,7 @@
 class GlobalTracker {
     static currentStringId = "color";
     static haloRadius = 5;
+    static numMorphs = 25;
 }
 
 AFRAME.registerComponent("controller", {
@@ -13,13 +14,24 @@ AFRAME.registerComponent("controller", {
         });
 
         window.addEventListener("keydown", function (event) {
-            const halo = document.getElementById("halo");
+            const halo = document.getElementById("halo-interface");
             if (event.key == "q") {
-                console.log("q pressed");
-                halo.components["halo"].fetchNextString(false);
+                halo.components["halo-interface"].fetchNextString(false);
             } else if (event.key == "e") {
-                console.log("e pressed");
-                halo.components["halo"].fetchNextString(true);
+                halo.components["halo-interface"].fetchNextString(true);
+            } else if (event.key == " ") {
+                console.log(" space called");
+                const scene = document.querySelector("a-scene");
+                const worldPosition = new THREE.Vector3();
+                const camera = document.getElementById("pov_cam");
+                const morphs = Array.from(camera.children).filter(child => child.hasAttribute("morph"));
+                morphs.forEach(morph => {
+                    morph.object3D.getWorldPosition(worldPosition);
+                    camera.removeChild(morph);
+                    scene.appendChild(morph);
+                    morph.setAttribute("position", worldPosition);
+                });
+                halo.components["halo-interface"].createMorphs(GlobalTracker.numMorphs)
             }
         });
 
@@ -36,8 +48,18 @@ AFRAME.registerComponent("controller", {
         });
 
         this.el.addEventListener("mouseup", function (event) {
-
             if (event.button == 2 && this.isRightClickingString) {
+                const camera = document.getElementById("pov_cam")
+                const morphs = Array.from(camera.children).filter(child => child.hasAttribute("morph"));
+                morphs.forEach(morph => {
+                    const halo = document.getElementById("halo-interface");
+                    const strings = Array.from(halo.children).filter(child => child.hasAttribute("string"));
+                    for (let i = 0; i < strings.length; i++) {
+                        const stringData = strings[i].components["string"].data;
+                        const factor = stringData.frequency * (1 + stringData.amplitude * (Math.random() - 0.5) * 2);
+                        morph.components["morph"].updateMorphProperties(strings[i], factor);
+                    }
+                });
                 this.isRightClickingString = false;
             }
         });

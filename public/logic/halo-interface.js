@@ -4,7 +4,7 @@ AFRAME.registerComponent("halo-interface", {
     schema: {
         haloColor: { type: "color", default: "blue" },
         haloOpacity: { type: "number", default: 0.25 },
-        stringTracker: { type: "int", default: 0 }
+        stringTracker: { type: "int", default: 0 },
     },
 
     init: function () {
@@ -13,17 +13,16 @@ AFRAME.registerComponent("halo-interface", {
             this.createString(Object.keys(stringPurposeMap)[i]);
         }
         this.changeStringVisibility(true);
-        this.createHalo();
+        this.createMorphs(GlobalTracker.numMorphs);
     },
 
-    createHalo: function () {
-        const halo = document.createElement("a-entity");
-        halo.setAttribute("id", "halo");
-        const haloGeometry = new THREE.CylinderGeometry(GlobalTracker.haloRadius, GlobalTracker.haloRadius, 40, 20);
-        const haloMaterial = new THREE.MeshStandardMaterial({ color: this.data.haloColor, transparent: true, opacity: this.data.haloOpacity });
-        halo.setObject3D("mesh", new THREE.Mesh(haloGeometry, haloMaterial));
-        halo.setAttribute("position", "0 -5 -9");
-        this.el.appendChild(halo);
+    createMorphs: function (numMorphs) {
+        for (let i = 0; i < numMorphs; i++) {
+            const morph = document.createElement("a-entity");
+            const camera = document.getElementById("pov_cam");
+            camera.appendChild(morph);
+            morph.setAttribute("morph", "");
+        }
     },
 
     fetchNextString(isNextString) {
