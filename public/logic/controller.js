@@ -20,7 +20,6 @@ AFRAME.registerComponent("controller", {
             } else if (event.key == "e") {
                 halo.components["halo-interface"].fetchNextString(true);
             } else if (event.key == " ") {
-                console.log(" space called");
                 const scene = document.querySelector("a-scene");
                 const worldPosition = new THREE.Vector3();
                 const camera = document.getElementById("pov_cam");

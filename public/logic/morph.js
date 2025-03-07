@@ -138,11 +138,6 @@ AFRAME.registerComponent("morph", {
         this.el.setAttribute("position", this.morph.position);
     },
 
-    instantiateMorph: function () {
-
-        this.setMorph();
-    },
-
     updateMorphProperties: function (string, factor) {
         switch (string.id) {
             case "color":
