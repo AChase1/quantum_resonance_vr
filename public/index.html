@@ -14,6 +14,10 @@
     <script src="logic/controller.js"></script>
     <script src="logic/halo-interface.js"></script>
     <script src="logic/avatar.js"></script>
+    <script src="logic/geometry.js"></script>
+    <script src="logic/global.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="networking/networking.js"></script>
     <link rel="stylesheet" href="css/user-gesture.css" />
   </head>
   <body>
@@ -22,6 +26,7 @@
       <a-assets> </a-assets>
 
       <a-entity id="universe" universe-env></a-entity>
+      <a-entity id="other-users"></a-entity>
 
       <!-- CAMERA & CURSOR -->
       <a-entity

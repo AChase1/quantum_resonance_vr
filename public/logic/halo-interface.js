@@ -1,4 +1,3 @@
-const stringPurposeMap = { "color": "purple", "geometry": "blue", "size": "green", "position": "black", "internalRotationAngle": "orange", "emissiveIntensity": "yellow" };
 
 AFRAME.registerComponent("halo-interface", {
     schema: {

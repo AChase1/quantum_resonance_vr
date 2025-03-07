@@ -1,8 +1,4 @@
-class GlobalTracker {
-    static currentStringId = "color";
-    static haloRadius = 5;
-    static numMorphs = 25;
-}
+
 
 AFRAME.registerComponent("controller", {
 
