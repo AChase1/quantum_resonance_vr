@@ -1,11 +1,13 @@
+
+
 AFRAME.registerComponent("avatar", {
 
     schema: {
-        color: { type: "color", default: "blue" },
+        color: { type: "color", default: 0x0055ff },
     },
 
     init: function () {
-        this.socket = io();
+        this.createAvatarObjects();
     },
 
     createAvatarObjects: function () {
@@ -54,8 +56,4 @@ AFRAME.registerComponent("avatar", {
         this.el.appendChild(rLeg);
         this.el.appendChild(lLeg);
     },
-
-    tick: function () {
-
-    }
 });

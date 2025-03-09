@@ -55,4 +55,41 @@ class Geometry {
                 return Geometry.sphere(size);
         };
     }
+
+    static defineColor(factor) {
+        const hue = (factor % 1) * 360;
+        return new THREE.Color(`hsl(${hue}, 100%, 50%)`);
+    }
+
+    static defineGeometry = (factor) => Math.floor((factor % 1) * 12) % 12;
+
+
+    static defineSize(factor) {
+        const updatedFactor = factor == 0 ? 0.5 : factor;
+        return updatedFactor * 2;
+    }
+
+    static definePosition(factor) {
+        const x = Geometry.getCoordinate(GlobalTracker.haloRadius);
+        const y = factor * Math.random() * 10;
+        const z = this.getCoordinate(GlobalTracker.haloRadius) - 9;
+
+        return new THREE.Vector3(
+            THREE.MathUtils.clamp(x, -5, 5),
+            THREE.MathUtils.clamp(y, 0, 5),
+            THREE.MathUtils.clamp(z, -5, 5)
+        );
+    }
+
+    static getCoordinate = (factor) => (Math.random() * factor * 2) - (factor);
+
+    static defineInternalRotationAngle(factor) {
+        return {
+            x: (factor % 1) * 0.02,
+            y: (factor % 1) * 0.02,
+            z: (factor % 1) * 0.02
+        };
+    }
+
+    static defineEmissiveIntensity = (factor) => factor % 1;
 }
