@@ -16,9 +16,10 @@
     <script src="repository/geometry.js"></script>
     <script src="repository/global.js"></script>
     <link rel="stylesheet" href="css/user-gesture.css" />
+    <link rel="stylesheet" href="css/timer.css" />
   </head>
   <body>
-    <a-scene start-experience physics="debug: true" controller>
+    <a-scene start-experience physics="debug: true">
       <!--ASSETS-->
       <a-assets> </a-assets>
 
@@ -42,6 +43,8 @@
         >
         </a-entity>
       </a-entity>
+
+      <div id="timer">Plank Epoch Ends in: 300</div>
 
       <!-- USER GESTURE HTML-->
       <div id="user-gesture-overlay">
