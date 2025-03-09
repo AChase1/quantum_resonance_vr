@@ -13,13 +13,14 @@
     <script src="logic/string.js"></script>
     <script src="logic/halo-interface.js"></script>
     <script src="logic/avatar.js"></script>
+    <script src="logic/ui-mechanics.js"></script>
     <script src="repository/geometry.js"></script>
-    <script src="repository/global.js"></script>
+    <script src="repository/global-tracker.js"></script>
     <link rel="stylesheet" href="css/user-gesture.css" />
     <link rel="stylesheet" href="css/ui.css" />
   </head>
   <body>
-    <a-scene start-experience physics="debug: true">
+    <a-scene start-experience physics="debug: true" ui-mechanics>
       <!--ASSETS-->
       <a-assets> </a-assets>
 
@@ -46,6 +47,34 @@
 
       <div id="timer">Plank Epoch Ends in: 300</div>
       <div id="progress">Universe Constructed: 0%</div>
+      <div class="instructions">
+        <div id="controls-label">Show Instructions (i)</div>
+
+        <div id="controls-menu">
+          <div id="controls-title">Hide Instructions (i)</div>
+          <pre></pre>
+          <div>Interactions:</div>
+          <div>
+            <span class="keys">w / a / s / d</span> => Character Movement
+          </div>
+          <div>
+            <span class="keys">Left Click + Drag</span> => Look Controls
+          </div>
+          <div>
+            <span class="keys">Right Click + Drag</span> => String Movement
+          </div>
+          <div><span class="keys">e</span> => Next String</div>
+          <div><span class="keys">q</span> => Previous String</div>
+          <pre></pre>
+          <div>String Functions:</div>
+          <div><span style="color: purple">Purple</span> => Color</div>
+          <div><span style="color: blue">Blue</span> => Geometry</div>
+          <div><span style="color: green">Green</span> => Size</div>
+          <div><span style="color: black">Black</span> => Position</div>
+          <div><span style="color: orange">Orange</span> => Rotation</div>
+          <div><span style="color: yellow">Yellow</span> => Glow</div>
+        </div>
+      </div>
 
       <!-- USER GESTURE HTML-->
       <div id="user-gesture-overlay">
