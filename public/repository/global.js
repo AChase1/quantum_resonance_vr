@@ -3,7 +3,9 @@ class GlobalTracker {
     static haloRadius = 5;
     static numMorphs = 25;
     static instantiatedMorphCount = 0;
+    static totalMorphsNeeded = 1000;
     static timerStarted = false;
+    static timer = 0;
 }
 
 const stringPurposeMap = { "color": "purple", "geometry": "blue", "size": "green", "position": "black", "internalRotationAngle": "orange", "emissiveIntensity": "yellow" };

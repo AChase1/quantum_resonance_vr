@@ -16,7 +16,7 @@
     <script src="repository/geometry.js"></script>
     <script src="repository/global.js"></script>
     <link rel="stylesheet" href="css/user-gesture.css" />
-    <link rel="stylesheet" href="css/timer.css" />
+    <link rel="stylesheet" href="css/ui.css" />
   </head>
   <body>
     <a-scene start-experience physics="debug: true">
@@ -45,6 +45,7 @@
       </a-entity>
 
       <div id="timer">Plank Epoch Ends in: 300</div>
+      <div id="progress">Universe Constructed: 0%</div>
 
       <!-- USER GESTURE HTML-->
       <div id="user-gesture-overlay">
@@ -59,6 +60,15 @@
     <script>
       const socket = io();
 
+      const updateProgress = function () {
+        const progress =
+          (GlobalTracker.instantiatedMorphCount /
+            GlobalTracker.totalMorphsNeeded) *
+          100;
+        document.getElementById("progress").innerText =
+          "Universe Constructed: " + progress + "%";
+      };
+
       // called when user clicks initial button
       const startExperience = function () {
         // hide button
@@ -68,22 +78,22 @@
           updateTimer();
           GlobalTracker.timerStarted = true;
         }
+        updateProgress();
       };
 
-      let timer = 300;
       function updateTimer() {
         document.getElementById(
           "timer"
-        ).innerText = `Plank Epoch Ends in: ${timer}`;
-        timer--;
+        ).innerText = `Plank Epoch Ends in: ${GlobalTracker.timer}`;
+        GlobalTracker.timer--;
 
-        if (timer >= 0) {
+        if (GlobalTracker.timer >= 0) {
           setTimeout(updateTimer, 1000);
         } else {
           document.getElementById("timer").innerText = "Time's up!";
         }
 
-        socket.emit("sendTimer", timer);
+        socket.emit("sendTimer", GlobalTracker.timer);
       }
 
       socket.on("retrieveTimer", (time) => {
@@ -192,7 +202,6 @@
       });
 
       socket.on("retrieveMorphUpdates", (morphs) => {
-        console.log("retrieve", Object.entries(morphs)); // Fixed missing parenthesis and comma
         const scene = document.querySelector("a-scene");
         morphs.forEach((morph) => {
           const morphEntity = document.createElement("a-entity");
@@ -206,6 +215,8 @@
           });
           scene.appendChild(morphEntity);
         });
+        GlobalTracker.instantiatedMorphCount += Object.entries(morphs).length;
+        updateProgress();
       });
 
       setInterval(() => {
