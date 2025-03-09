@@ -11,8 +11,10 @@
     <script src="logic/morph.js"></script>
     <script src="logic/universe_env.js"></script>
     <script src="logic/string.js"></script>
-    <script src="logic/controller.js"></script>
     <script src="logic/halo-interface.js"></script>
+    <script src="logic/avatar.js"></script>
+    <script src="repository/geometry.js"></script>
+    <script src="repository/global.js"></script>
     <link rel="stylesheet" href="css/user-gesture.css" />
   </head>
   <body>
@@ -21,6 +23,7 @@
       <a-assets> </a-assets>
 
       <a-entity id="universe" universe-env></a-entity>
+      <a-entity id="other-users"></a-entity>
 
       <!-- CAMERA & CURSOR -->
       <a-entity
@@ -31,6 +34,7 @@
         look-controls
       >
         <a-entity id="halo-interface" halo-interface></a-entity>
+        <a-entity id="avatar" avatar></a-entity>
         <a-entity
           id="cursor"
           cursor="rayOrigin:mouse;"
@@ -48,5 +52,176 @@
         </div>
       </div>
     </a-scene>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      if (!window.socket) {
+        const socket = io();
+        window.socket = socket;
+
+        const avatar = document.getElementById("avatar");
+        const otherUsersContainer = document.getElementById("other-users");
+        const camera = document.getElementById("pov_cam");
+        let otherUsers = [];
+
+        window.addEventListener("contextmenu", function (event) {
+          event.preventDefault();
+        });
+
+        window.addEventListener("mousemove", function (event) {
+          const string = document.getElementById(GlobalTracker.currentStringId);
+          this.mouse = new THREE.Vector2();
+          this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+          this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+          if (this.isRightClickingString) {
+            string.components["string"].data.amplitude = this.mouse.x;
+            string.components["string"].data.frequency = this.mouse.y;
+          }
+        });
+
+        window.addEventListener("mouseup", function (event) {
+          if (event.button == 2 && this.isRightClickingString) {
+            const camera = document.getElementById("pov_cam");
+            const morphs = Array.from(camera.children).filter((child) =>
+              child.hasAttribute("morph")
+            );
+            morphs.forEach((morph) => {
+              const halo = document.getElementById("halo-interface");
+              const strings = Array.from(halo.children).filter((child) =>
+                child.hasAttribute("string")
+              );
+              for (let i = 0; i < strings.length; i++) {
+                const stringData = strings[i].components["string"].data;
+                const factor =
+                  stringData.frequency *
+                  (1 + stringData.amplitude * (Math.random() - 0.5) * 2);
+                morph.components["morph"].updateMorphProperties(
+                  strings[i],
+                  factor
+                );
+              }
+              morph.components["morph"].setMorph();
+            });
+            this.isRightClickingString = false;
+          }
+        });
+
+        window.addEventListener("mousedown", function (event) {
+          const string = document.getElementById(GlobalTracker.currentStringId);
+          // disables default browser right click functionality
+          event.preventDefault();
+
+          if (event.button == 2) {
+            // creates raycaster to check for intersection with string
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(this.mouse, camera.getObject3D("camera"));
+            const intersects = raycaster.intersectObject(string.object3D, true);
+
+            if (intersects.length > 0) {
+              this.isRightClickingString = true;
+            }
+          }
+        });
+
+        window.addEventListener("keydown", function (event) {
+          const halo = document.getElementById("halo-interface");
+          if (event.key == "q") {
+            halo.components["halo-interface"].fetchNextString(false);
+          } else if (event.key == "e") {
+            halo.components["halo-interface"].fetchNextString(true);
+          } else if (event.key == " ") {
+            const scene = document.querySelector("a-scene");
+            const camera = document.getElementById("pov_cam");
+            const morphs = Array.from(camera.children).filter((child) =>
+              child.hasAttribute("morph")
+            );
+            let morphProperties = morphs.map((morph) => {
+              const morphWorldPosition = new THREE.Vector3();
+              morph.object3D.getWorldPosition(morphWorldPosition);
+              const morphData = morph.components["morph"].data;
+              camera.removeChild(morph);
+              return {
+                position: morphWorldPosition,
+                internalRotationAngle: morphData.internalRotationAngle,
+                size: morphData.size,
+                color: morphData.color,
+                geometryIndex: morphData.geometryIndex,
+                emissiveIntensity: morphData.emissiveIntensity,
+              };
+            });
+            console.log("send: " + Object.entries(morphProperties));
+            socket.emit("sendMorphUpdate", morphProperties);
+            halo.components["halo-interface"].createMorphs(
+              GlobalTracker.numMorphs
+            );
+          }
+        });
+
+        socket.on("retrieveMorphUpdates", (morphs) => {
+          console.log("retrieve", Object.entries(morphs)); // Fixed missing parenthesis and comma
+          const scene = document.querySelector("a-scene");
+          morphs.forEach((morph) => {
+            const morphEntity = document.createElement("a-entity");
+            morphEntity.setAttribute("morph", {
+              geometryIndex: morph.geometryIndex,
+              color: morph.color,
+              size: morph.size,
+              internalRotationAngle: morph.internalRotationAngle,
+              emissiveIntensity: morph.emissiveIntensity,
+              position: morph.position,
+            });
+            scene.appendChild(morphEntity);
+          });
+        });
+
+        setInterval(() => {
+          const worldPosition = new THREE.Vector3();
+          const worldRotation = new THREE.Vector3();
+          avatar.object3D.getWorldPosition(worldPosition);
+          avatar.object3D.getWorldDirection(worldRotation);
+          const color = avatar.components["avatar"].data.color;
+          socket.emit("sendUserUpdate", {
+            position: worldPosition,
+            rotation: worldRotation,
+            color: color,
+          });
+        }, 10);
+
+        socket.on("retrieveUserUpdates", ({ id, data }) => {
+          if (otherUsers[id]) {
+            otherUsers[id].setAttribute("position", data.position);
+            otherUsers[id].setAttribute("rotation", data.rotation);
+            if (data.color) {
+              otherUsers[id].setAttribute("avatar", "color: " + data.color);
+            }
+          }
+        });
+
+        socket.on("fetchUsers", (users) => {
+          Object.entries(users).forEach(([id, data]) => {
+            if (id !== socket.id) {
+              addOtherUser(id, data);
+            }
+          });
+        });
+
+        socket.on("removePlayer", (id) => {
+          if (otherUsers[id]) {
+            otherUsers[id].parentNode.removeChild(otherUsers[id]);
+            delete otherUsers[id];
+          }
+        });
+
+        function addOtherUser(id, data) {
+          const avatar = document.createElement("a-entity");
+          avatar.setAttribute("avatar", data.color);
+          avatar.setAttribute("position", data.position);
+          avatar.setAttribute("rotation", data.rotation);
+          avatar.setAttribute("id", id);
+          otherUsersContainer.appendChild(avatar);
+          otherUsers[id] = avatar;
+        }
+      }
+    </script>
   </body>
 </html>
