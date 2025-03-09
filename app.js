@@ -22,10 +22,11 @@ io.on("connection", (socket) => {
     const avatarColorMap = { 0x0055ff: 0xffa500, 0xffff00: 0x8a2be2, 0xff0000: 0x00ffff, 0x800000: 0x40e0d0 };
 
     users[socket.id] = { position: { x: 0, y: 1.6, z: 0 }, rotation: { x: 0, y: 0, z: 0 }, color: Object.entries(avatarColorMap)[0] };
-
-
-
     io.emit("fetchUsers", users);
+
+    socket.on("sendTimer", (time) => {
+        io.emit("retrieveTimer", time);
+    });
 
     socket.on("sendMorphUpdate", (data) => {
         io.emit("retrieveMorphUpdates", data);
