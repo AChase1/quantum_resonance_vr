@@ -30,6 +30,7 @@ AFRAME.registerComponent("string", {
 
     tick: function (time) {
         for (let i = 0; i < this.data.segments; i++) {
+            // parametric representation of a sine wave (using amplitude and frequency)
             const t = (i / this.data.segments) * Math.PI * 2;
             const x = this.data.amplitude * Math.sin(this.data.frequency * t);
             const y = (t - Math.PI) * (this.data.length / Math.PI);
