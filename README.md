@@ -6,6 +6,8 @@ Welcome to Quantum Resonance VR! Invite friends in leveraging the power of strin
 
 ## Objective
 
+<br>
+
 ### Collaborate to Build the Universe
 
 ---
@@ -22,7 +24,7 @@ Whilst instantiating the universe together, you must also compete to create the 
 <br>
 <br>
 
-### Instructions to Play
+## How to Play
 
 ---
 
@@ -37,13 +39,12 @@ This project is currently not deployed to a server or url, therefore in order to
    - `npm install aframe-physics-system --save`
 4. Follow the steps to install ngrok => [ngrok.com](https://ngrok.com/)
 5. Type `ngrok http 8080` in your terminal
-   5.1. This will produce a url. Share that url with your friends and paste the url in your preferred browser
+6. This will produce a url. Share that url with your friends and paste the url in your preferred browser
    <br>
    <br>
 
 #### Controls
 
-<br>
 Once you've followed the steps above, press the "Play Experience" button to start playing the game. Please be aware that as soon as one player presses the "Player Experience" button, the countdown timer will begin.
 
 Use the WASD keys to move around the environment. Left click and drag to change your looking direction.
