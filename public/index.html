@@ -7,7 +7,6 @@
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-environment-component@1.3.3/dist/aframe-environment-component.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/n5ro/aframe-physics-system@v$npm_package_version/dist/aframe-physics-system.min.js"></script>
-    <script src="logic/start_experience.js"></script>
     <script src="logic/morph.js"></script>
     <script src="logic/universe_env.js"></script>
     <script src="logic/string.js"></script>
@@ -21,13 +20,10 @@
   </head>
   <body>
     <a-scene start-experience physics="debug: true" ui-mechanics>
-      <!--ASSETS-->
-      <a-assets> </a-assets>
-
       <a-entity id="universe" universe-env></a-entity>
       <a-entity id="other-users"></a-entity>
 
-      <!-- CAMERA & CURSOR -->
+      <!--------- CURRENT USER ------------>
       <a-entity
         id="pov_cam"
         position="0 1.8 0"
@@ -45,39 +41,53 @@
         </a-entity>
       </a-entity>
 
-      <div id="timer">Plank Epoch Ends in: 300</div>
-      <div id="progress">Universe Constructed: 0%</div>
-      <div class="instructions">
-        <div id="controls-label">Show Instructions (i)</div>
+      <!--------- UI ELEMENTS ------------>
 
-        <div id="controls-menu">
-          <div id="controls-title">Hide Instructions (i)</div>
-          <pre></pre>
-          <div>Interactions:</div>
-          <div>
-            <span class="keys">w / a / s / d</span> => Character Movement
+      <div id="in-game-ui">
+        <div id="timer">Plank Epoch Ends in: 300</div>
+        <div id="progress">Universe Constructed: 0%</div>
+        <div class="instructions">
+          <div id="controls-label">Show Instructions (i)</div>
+
+          <div id="controls-menu">
+            <div id="controls-title">Hide Instructions (i)</div>
+            <pre></pre>
+            <div>Interactions:</div>
+            <div>
+              <span class="keys">w / a / s / d</span> => Character Movement
+            </div>
+            <div>
+              <span class="keys">Left Click + Drag</span> => Look Controls
+            </div>
+            <div>
+              <span class="keys">Right Click + Drag</span> => String Movement
+            </div>
+            <div><span class="keys">Space</span> => Instantiate Objects</div>
+            <div><span class="keys">e</span> => Next String</div>
+            <div><span class="keys">q</span> => Previous String</div>
+            <pre></pre>
+            <div>String Functions:</div>
+            <div><span style="color: purple">Purple</span> => Color</div>
+            <div><span style="color: blue">Blue</span> => Geometry</div>
+            <div><span style="color: green">Green</span> => Size</div>
+            <div><span style="color: black">Black</span> => Position</div>
+            <div><span style="color: orange">Orange</span> => Rotation</div>
+            <div><span style="color: yellow">Yellow</span> => Glow</div>
           </div>
-          <div>
-            <span class="keys">Left Click + Drag</span> => Look Controls
-          </div>
-          <div>
-            <span class="keys">Right Click + Drag</span> => String Movement
-          </div>
-          <div><span class="keys">e</span> => Next String</div>
-          <div><span class="keys">q</span> => Previous String</div>
-          <pre></pre>
-          <div>String Functions:</div>
-          <div><span style="color: purple">Purple</span> => Color</div>
-          <div><span style="color: blue">Blue</span> => Geometry</div>
-          <div><span style="color: green">Green</span> => Size</div>
-          <div><span style="color: black">Black</span> => Position</div>
-          <div><span style="color: orange">Orange</span> => Rotation</div>
-          <div><span style="color: yellow">Yellow</span> => Glow</div>
         </div>
       </div>
 
-      <!-- USER GESTURE HTML-->
-      <div id="user-gesture-overlay">
+      <div id="endgame-ui">
+        <div>Plank Epoch Ended</div>
+        <pre></pre>
+        <div id="final-progress">Universe Constructed: 0%</div>
+        <prev></prev>
+        <pre></pre>
+        <div>Who Constructed the Most Interesting Worlds?</div>
+        <div id="user-container"></div>
+      </div>
+
+      <div id="start-game-ui">
         <div class="center">
           <button id="user-gesture-button" onclick="startExperience()">
             Enter Experience
@@ -85,51 +95,74 @@
         </div>
       </div>
     </a-scene>
+
     <script src="/socket.io/socket.io.js"></script>
     <script>
+      // The following code is consolidated into this script for multi-user networking purposes
       const socket = io();
 
-      const updateProgress = function () {
-        const progress =
-          (GlobalTracker.instantiatedMorphCount /
-            GlobalTracker.totalMorphsNeeded) *
-          100;
-        document.getElementById("progress").innerText =
-          "Universe Constructed: " + progress + "%";
+      // ----- UI GAME MECHANICS ----- //
+
+      const checkForEndgame = function () {
+        if (
+          GlobalTracker.instantiatedMorphCount >=
+            GlobalTracker.totalMorphsNeeded ||
+          GlobalTracker.timer <= 0
+        ) {
+          document.exitPointerLock();
+          GlobalTracker.disableMorphCreation = true;
+          document.getElementById("endgame-ui").style.display = "block";
+          document.getElementById("in-game-ui").style.display = "none";
+          document.getElementById("final-progress").innerText =
+            "Universe Constructed: " + getCurrentProgress() + "%";
+        }
       };
 
-      // called when user clicks initial button
+      const voteForUser = function (id) {
+        socket.emit("sendVote", id);
+      };
+
+      const getCurrentProgress = () =>
+        (GlobalTracker.instantiatedMorphCount /
+          GlobalTracker.totalMorphsNeeded) *
+        100;
+
+      const updateProgress = () => {
+        document.getElementById("progress").innerText =
+          "Universe Constructed: " + getCurrentProgress() + "%";
+        checkForEndgame();
+      };
+
       const startExperience = function () {
-        // hide button
         document.querySelector("#user-gesture-overlay").style.display = "none";
 
         if (!GlobalTracker.timerStarted) {
           updateTimer();
           GlobalTracker.timerStarted = true;
         }
+        document.getElementById("endgame-ui").style.display = "none";
         updateProgress();
       };
 
       function updateTimer() {
-        document.getElementById(
-          "timer"
-        ).innerText = `Plank Epoch Ends in: ${GlobalTracker.timer}`;
+        updateTimerText();
         GlobalTracker.timer--;
 
         if (GlobalTracker.timer >= 0) {
           setTimeout(updateTimer, 1000);
         } else {
-          document.getElementById("timer").innerText = "Time's up!";
+          document.getElementById("in-game-ui").style.display = "none";
         }
-
         socket.emit("sendTimer", GlobalTracker.timer);
+        checkForEndgame();
       }
 
-      socket.on("retrieveTimer", (time) => {
-        const timer = document.getElementById("timer");
-        timer.innerText = "Plank Epoch Ends in: " + time;
-        GlobalTracker.timerStarted = true;
-      });
+      const updateTimerText = () =>
+        (document.getElementById(
+          "timer"
+        ).innerText = `Plank Epoch Ends in: ${GlobalTracker.timer}`);
+
+      // ----- USER CONTROLS ----- //
 
       const avatar = document.getElementById("avatar");
       const otherUsersContainer = document.getElementById("other-users");
@@ -153,7 +186,11 @@
       });
 
       window.addEventListener("mouseup", function (event) {
-        if (event.button == 2 && this.isRightClickingString) {
+        if (
+          event.button == 2 &&
+          this.isRightClickingString &&
+          !GlobalTracker.disableMorphCreation
+        ) {
           const camera = document.getElementById("pov_cam");
           const morphs = Array.from(camera.children).filter((child) =>
             child.hasAttribute("morph")
@@ -203,6 +240,7 @@
         } else if (event.key == "e") {
           halo.components["halo-interface"].fetchNextString(true);
         } else if (event.key == " ") {
+          if (GlobalTracker.disableMorphCreation) return;
           const scene = document.querySelector("a-scene");
           const camera = document.getElementById("pov_cam");
           const morphs = Array.from(camera.children).filter((child) =>
@@ -222,12 +260,26 @@
               emissiveIntensity: morphData.emissiveIntensity,
             };
           });
-          console.log("send: " + Object.entries(morphProperties));
           socket.emit("sendMorphUpdate", morphProperties);
           halo.components["halo-interface"].createMorphs(
             GlobalTracker.numMorphs
           );
         }
+      });
+
+      // ----- WEBSOCKET EVENTS ----- //
+
+      socket.on("retrieveWinner", (winnerId) => {
+        const winnnerContainer = document.createElement("div");
+        winnnerContainer.innerText =
+          "Winner: " + GlobalTracker.getUserInfoString(winnerId);
+      });
+
+      socket.on("retrieveTimer", (time) => {
+        GlobalTracker.timerStarted = true;
+        GlobalTracker.timer = time;
+        updateTimerText();
+        checkForEndgame();
       });
 
       socket.on("retrieveMorphUpdates", (morphs) => {
@@ -273,11 +325,30 @@
 
       socket.on("fetchUsers", (users) => {
         Object.entries(users).forEach(([id, data]) => {
+          GlobalTracker.users.push(id);
           if (id !== socket.id) {
             addOtherUser(id, data);
+            createUserVoteButton(id);
           }
         });
       });
+
+      const createUserVoteButton = (id) => {
+        const camera = document.getElementById("pov_cam");
+        const userContainer = document.getElementById("user-container");
+        const userVoteButton = document.createElement("button");
+        userVoteButton.className = "button";
+        userVoteButton.innerText = GlobalTracker.getUserInfoString(id);
+        userVoteButton.onclick = () => voteForUser(id);
+        userContainer.appendChild(userVoteButton);
+        userVoteButton.addEventListener("mouseover", () => {
+          console.log("mouse enter");
+          camera.setAttribute("look-controls", "enabled", false);
+        });
+        userVoteButton.addEventListener("mouseout", () => {
+          camera.setAttribute("look-controls", "enabled", true);
+        });
+      };
 
       socket.on("removePlayer", (id) => {
         if (otherUsers[id]) {

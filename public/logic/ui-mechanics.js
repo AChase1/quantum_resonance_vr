@@ -3,6 +3,7 @@ AFRAME.registerComponent("ui-mechanics", {
         this.showControls = false;
         document.getElementById("controls-menu").style.display = "none";
         document.getElementById("controls-label").style.display = "block";
+        document.querySelector("#user-gesture-button").style.display = "block";
 
         document.addEventListener("keydown", (event) => {
             if (event.key === "i") {
